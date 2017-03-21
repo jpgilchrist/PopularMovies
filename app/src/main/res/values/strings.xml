@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="detail_activity_label">Movie Detail</string>
+    <string name="settings_activity_label">Settings</string>
+    <string name="menu_action_share_title">Share</string>
+    <string name="move_grid_item_default_text">Movie Title</string>
+</resources>
