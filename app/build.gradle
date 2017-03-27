@@ -17,6 +17,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    buildTypes.each {
+        it.buildConfigField 'String', 'TMDB_API_KEY', TMDB_API_KEY
+    }
 }
 
 dependencies {
@@ -26,5 +29,7 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:25.2.0'
     compile 'com.android.support:recyclerview-v7:25.2.0'
+    compile 'com.squareup.okhttp3:okhttp:3.6.0'
+    compile 'com.google.code.gson:gson:2.8.0'
     testCompile 'junit:junit:4.12'
 }

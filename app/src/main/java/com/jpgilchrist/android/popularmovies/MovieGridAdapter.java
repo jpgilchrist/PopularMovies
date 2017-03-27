@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.jpgilchrist.android.popularmovies.tmdb.TMDBPage;
+
 /**
  * Created by jpegz on 3/20/17.
  */
@@ -16,6 +18,8 @@ import android.widget.TextView;
  * RecyclerView Adapter for the GridLayout in the Main Activity
  */
 public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.ViewHolder> {
+
+    private static final String TAG = MovieGridAdapter.class.getSimpleName();
 
     /**
      * ViewHolder for the RecyclerView
@@ -33,12 +37,12 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
         }
     }
 
-    private String[] data;
+    private TMDBPage data;
 
     /**
      * initializes the adapter and accepts the "data set" as the argument
      */
-    public MovieGridAdapter(String[] data) {
+    public MovieGridAdapter(TMDBPage data) {
         this.data = data;
     }
 
@@ -61,7 +65,7 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
      */
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.titleTextView.setText(this.data[position]);
+        holder.titleTextView.setText(this.data.getResults().get(position).getTitle());
     }
 
     /**
@@ -73,7 +77,13 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
         if (data == null) {
             return 0;
         }
-        return data.length;
+
+        return data.getResults().size();
+    }
+
+    public void setData(TMDBPage page) {
+        this.data = page;
+        notifyDataSetChanged();
     }
 
 }

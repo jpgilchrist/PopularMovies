@@ -1,26 +1,43 @@
 package com.jpgilchrist.android.popularmovies;
 
 import android.content.Intent;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+import com.jpgilchrist.android.popularmovies.tmdb.TMDBPage;
+import com.jpgilchrist.android.popularmovies.tmdb.TMDBUtils;
+
+import java.net.URL;
+
+public class MainActivity
+        extends AppCompatActivity
+        implements LoaderManager.LoaderCallbacks<TMDBPage> {
+
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter adapter;
+    private MovieGridAdapter adapter;
     private RecyclerView.LayoutManager layoutManager;
 
-    private final String[] data = {"one", "two", "three"};
+    private int TMDB_LOADER_ID = 9001;
+
+    private final TMDBPage data = new TMDBPage();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Log.d(TAG, "Starting MainActivity");
 
         // find the recycler view
         recyclerView = (RecyclerView) findViewById(R.id.movie_grid_recycler_view);
@@ -35,6 +52,12 @@ public class MainActivity extends AppCompatActivity {
         // create a new adapter with our fake data
         adapter = new MovieGridAdapter(data);
         recyclerView.setAdapter(adapter);
+
+        // setup and start the loader to fetch the TMDB Data
+        int loaderId = TMDB_LOADER_ID;
+        LoaderManager.LoaderCallbacks<TMDBPage> callback = MainActivity.this;
+        Bundle bundleForLoader = null;
+        getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
     }
 
     @Override
@@ -59,5 +82,39 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public Loader<TMDBPage> onCreateLoader(int id, final Bundle args) {
+
+        return new AsyncTaskLoader<TMDBPage>(MainActivity.this) {
+
+            @Override
+            protected void onStartLoading() {
+                Log.d(TAG, "Async Loader Start Loading");
+                forceLoad();
+            }
+
+            @Override
+            public TMDBPage loadInBackground() {
+                Log.d(TAG, "Async Loader Load In Background");
+
+                TMDBPage response = TMDBUtils.getResponseFromURL(TMDBUtils.buildPublicMoviesURL(1));
+
+                Log.d(TAG, "Received Response: " + response.toString());
+
+                return response;
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<TMDBPage> loader, TMDBPage data) {
+        adapter.setData(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<TMDBPage> loader) {
+        adapter.setData(null);
     }
 }
