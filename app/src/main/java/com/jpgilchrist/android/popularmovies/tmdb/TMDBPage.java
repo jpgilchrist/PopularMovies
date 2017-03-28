@@ -12,6 +12,9 @@ import java.util.List;
  */
 
 public class TMDBPage {
+
+    public static final int ITEMS_PER_PAGE = 20; // from TMDB api docs
+
     private int page;
     private int total_results;
     private int total_pages;

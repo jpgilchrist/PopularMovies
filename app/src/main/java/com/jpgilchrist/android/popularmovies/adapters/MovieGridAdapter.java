@@ -1,6 +1,8 @@
 package com.jpgilchrist.android.popularmovies.adapters;
 
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +21,9 @@ import com.jpgilchrist.android.popularmovies.tmdb.TMDBPage;
 public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.ViewHolder> {
 
     private static final String TAG = MovieGridAdapter.class.getSimpleName();
+
+    public static final String FETCH_NEXT_PAGE_BROADCAST = "com.jpgilchrist.android.FETCH_NEXT_PAGE_BROADCAST";
+    public static final String FETCH_PREVIOUS_PAGE_BROADCAST = "com.jpgilchrist.android.FETCH_PREVIOUS_PAGE_BROADCAST";
 
     /**
      * ViewHolder for the RecyclerView
@@ -68,7 +73,25 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
      */
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        Log.d(TAG, "onBindViewHolder position[" + position + "] itemCount[" + getItemCount() + "] lastPageLoaded[" + pageHolder.getPage() + "]");
+
         holder.titleTextView.setText(this.pageHolder.getResults().get(position).getTitle());
+
+        if (position == getItemCount() - 1) { // we are binding the last item
+            Log.d(TAG, "Sending Broadcast: " + FETCH_NEXT_PAGE_BROADCAST);
+
+            Intent intent = new Intent();
+            intent.setAction(FETCH_NEXT_PAGE_BROADCAST);
+            holder.itemView.getContext().sendBroadcast(intent);
+        } else if (position == 0) {
+
+            int lastPageLoaded = pageHolder.getPage();
+            if (lastPageLoaded * TMDBPage.ITEMS_PER_PAGE > pageHolder.getResults().size()) {
+                Intent intent = new Intent();
+                intent.setAction(FETCH_PREVIOUS_PAGE_BROADCAST);
+                holder.itemView.getContext().sendBroadcast(intent);
+            }
+        }
     }
 
     /**
@@ -96,6 +119,11 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
     public void appendPage(TMDBPage page) {
         this.pageHolder.setPage(page.getPage());
         this.pageHolder.getResults().addAll(page.getResults());
+        notifyDataSetChanged();
+    }
+
+    public void prependPage(TMDBPage page) {
+        this.pageHolder.getResults().addAll(0, page.getResults());
         notifyDataSetChanged();
     }
 
