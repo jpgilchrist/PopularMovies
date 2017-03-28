@@ -1,13 +1,12 @@
-package com.jpgilchrist.android.popularmovies;
+package com.jpgilchrist.android.popularmovies.adapters;
 
-import android.graphics.Movie;
-import android.support.v4.widget.ViewDragHelper;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.jpgilchrist.android.popularmovies.R;
 import com.jpgilchrist.android.popularmovies.tmdb.TMDBPage;
 
 /**
@@ -37,13 +36,17 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
         }
     }
 
-    private TMDBPage data;
+    private TMDBPage pageHolder;
 
     /**
      * initializes the adapter and accepts the "data set" as the argument
      */
-    public MovieGridAdapter(TMDBPage data) {
-        this.data = data;
+    public MovieGridAdapter(TMDBPage initialPage) {
+        if (initialPage == null) {
+            this.pageHolder = new TMDBPage();
+        } else {
+            this.pageHolder = initialPage;
+        }
     }
 
     /**
@@ -65,7 +68,7 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
      */
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.titleTextView.setText(this.data.getResults().get(position).getTitle());
+        holder.titleTextView.setText(this.pageHolder.getResults().get(position).getTitle());
     }
 
     /**
@@ -74,15 +77,25 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
      */
     @Override
     public int getItemCount() {
-        if (data == null) {
+        if (this.pageHolder == null) {
             return 0;
         }
 
-        return data.getResults().size();
+        return this.pageHolder.getResults().size();
     }
 
-    public void setData(TMDBPage page) {
-        this.data = page;
+    public void setPage(TMDBPage initialPage) {
+        if (initialPage == null) {
+            this.pageHolder = new TMDBPage();
+        } else {
+            this.pageHolder = initialPage;
+        }
+        notifyDataSetChanged();
+    }
+
+    public void appendPage(TMDBPage page) {
+        this.pageHolder.setPage(page.getPage());
+        this.pageHolder.getResults().addAll(page.getResults());
         notifyDataSetChanged();
     }
 

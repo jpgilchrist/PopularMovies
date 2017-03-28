@@ -1,4 +1,4 @@
-package com.jpgilchrist.android.popularmovies;
+package com.jpgilchrist.android.popularmovies.activities;
 
 import android.content.Intent;
 import android.support.v4.app.LoaderManager;
@@ -13,10 +13,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.jpgilchrist.android.popularmovies.adapters.MovieGridAdapter;
+import com.jpgilchrist.android.popularmovies.R;
 import com.jpgilchrist.android.popularmovies.tmdb.TMDBPage;
 import com.jpgilchrist.android.popularmovies.tmdb.TMDBUtils;
-
-import java.net.URL;
 
 public class MainActivity
         extends AppCompatActivity
@@ -91,17 +91,12 @@ public class MainActivity
 
             @Override
             protected void onStartLoading() {
-                Log.d(TAG, "Async Loader Start Loading");
                 forceLoad();
             }
 
             @Override
             public TMDBPage loadInBackground() {
-                Log.d(TAG, "Async Loader Load In Background");
-
                 TMDBPage response = TMDBUtils.getResponseFromURL(TMDBUtils.buildPublicMoviesURL(1));
-
-                Log.d(TAG, "Received Response: " + response.toString());
 
                 return response;
             }
@@ -109,12 +104,12 @@ public class MainActivity
     }
 
     @Override
-    public void onLoadFinished(Loader<TMDBPage> loader, TMDBPage data) {
-        adapter.setData(data);
+    public void onLoadFinished(Loader<TMDBPage> loader, TMDBPage page) {
+        adapter.setPage(page);
     }
 
     @Override
     public void onLoaderReset(Loader<TMDBPage> loader) {
-        adapter.setData(null);
+        adapter.setPage(null);
     }
 }
