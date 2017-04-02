@@ -28,7 +28,6 @@ import java.util.List;
 public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.ViewHolder> {
 
     private static final String TAG = MovieGridAdapter.class.getSimpleName();
-
     /**
      * ViewHolder for the RecyclerView
      */
@@ -87,8 +86,8 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
         return this.data.size();
     }
 
-    public void appendPage(TMDBPage page) {
-        this.data.addAll(page.getResults());
+    public void setData(List<TMDBPage.TMDBResult> data) {
+        this.data = data;
         notifyDataSetChanged();
     }
 

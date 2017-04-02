@@ -53,7 +53,7 @@ public class TMDBUtils {
 
         public static ImageSize fromPath(String path) {
             for (ImageSize imageSize : ImageSize.values()) {
-                if (imageSize.path == path) {
+                if (imageSize.path.equals(path)) {
                     return imageSize;
                 }
             }
@@ -61,26 +61,41 @@ public class TMDBUtils {
         }
     }
 
-    public static URL buildPublicMoviesURL(int page) {
-        Uri uri = Uri.parse(BASE_URL).buildUpon()
-                .path(POPULAR_MOVIES_PATH)
-                .appendQueryParameter(QP_APIKEY_NAME, QP_APIKEY_VALUE)
-                .appendQueryParameter(QP_LANG_NAME, QP_LANG_VALUE)
-                .appendQueryParameter(QP_PAGE_NAME, String.valueOf(page))
-                .build();
+    public enum Sort {
+        POPULAR("popular"), TOP_RATED("top_rated");
 
-        try {
-            return new URL(uri.toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        private String sortValue;
+
+        Sort(String sortValue) {
+            this.sortValue = sortValue;
         }
-        return null;
+
+        public String getSortValue() {
+            return this.sortValue;
+        }
+
+        public static Sort fromSortValue(String sortValue) {
+            for (Sort sort : Sort.values()) {
+                if (sort.sortValue.equals(sortValue)) {
+                    return sort;
+                }
+            }
+            return Sort.POPULAR; // default to POPULAR
+        }
     }
 
-    public static URL buildTopRatedMoviesURL(int page) {
-        Uri uri = Uri.parse(BASE_URL).buildUpon()
-                .path(TOPRATED_MOVIES_PATH)
-                .appendQueryParameter(QP_APIKEY_NAME, QP_APIKEY_VALUE)
+    public static URL buildUrl(int page, Sort sort) {
+        Uri.Builder builder = Uri.parse(BASE_URL).buildUpon();
+        switch (sort) {
+            case POPULAR:
+                builder.path(POPULAR_MOVIES_PATH);
+                break;
+            case TOP_RATED:
+                builder.path(TOPRATED_MOVIES_PATH);
+                break;
+        }
+
+        Uri uri = builder.appendQueryParameter(QP_APIKEY_NAME, QP_APIKEY_VALUE)
                 .appendQueryParameter(QP_LANG_NAME, QP_LANG_VALUE)
                 .appendQueryParameter(QP_PAGE_NAME, String.valueOf(page))
                 .build();

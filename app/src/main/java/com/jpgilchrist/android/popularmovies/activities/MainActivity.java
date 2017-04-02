@@ -1,9 +1,7 @@
 package com.jpgilchrist.android.popularmovies.activities;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -12,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,7 +21,8 @@ import com.jpgilchrist.android.popularmovies.tmdb.TMDBUtils;
 
 public class MainActivity
         extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<TMDBPage> {
+        implements LoaderManager.LoaderCallbacks<TMDBPage>,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -38,8 +36,6 @@ public class MainActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         // find the recycler view
         recyclerView = (RecyclerView) findViewById(R.id.movie_grid_recycler_view);
@@ -55,8 +51,40 @@ public class MainActivity
         adapter = new MovieGridAdapter();
         recyclerView.setAdapter(adapter);
 
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
+
         getSupportLoaderManager().initLoader(TMDB_LOADER_ID, null, MainActivity.this);
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (PREFERENCES_HAVE_CHANGED) {
+            PREFERENCES_HAVE_CHANGED = false;
+
+            readSharedPreferencesForSortOrder();
+            getSupportLoaderManager().restartLoader(TMDB_LOADER_ID, null, this);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    private void readSharedPreferencesForSortOrder() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        CURRENT_SORT_METHOD = TMDBUtils.Sort.fromSortValue(
+                sharedPreferences.getString(getString(R.string.SORT_PREF_KEY), getString(R.string.SORT_PREF_DEFAULT_VALUE))
+        );
+    }
+
+    private static TMDBUtils.Sort CURRENT_SORT_METHOD = TMDBUtils.Sort.POPULAR;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -104,7 +132,7 @@ public class MainActivity
             public TMDBPage loadInBackground() {
                 TMDBPage response = null;
 
-                response = TMDBUtils.getResponseFromURL(TMDBUtils.buildPublicMoviesURL(1));
+                response = TMDBUtils.getResponseFromURL(TMDBUtils.buildUrl(1, CURRENT_SORT_METHOD));
 
                 return response;
             }
@@ -120,12 +148,18 @@ public class MainActivity
     @Override
     public void onLoadFinished(Loader<TMDBPage> loader, TMDBPage page) {
         if (page != null) {
-            adapter.appendPage(page);
+            adapter.setData(page.getResults());
         }
     }
 
     @Override
     public void onLoaderReset(Loader<TMDBPage> loader) {
         adapter.reset();
+    }
+
+    private static boolean PREFERENCES_HAVE_CHANGED = false;
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        PREFERENCES_HAVE_CHANGED = true;
     }
 }
