@@ -11,6 +11,9 @@ import android.widget.TextView;
 import com.jpgilchrist.android.popularmovies.R;
 import com.jpgilchrist.android.popularmovies.tmdb.TMDBPage;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Created by jpegz on 3/20/17.
  */
@@ -21,9 +24,6 @@ import com.jpgilchrist.android.popularmovies.tmdb.TMDBPage;
 public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.ViewHolder> {
 
     private static final String TAG = MovieGridAdapter.class.getSimpleName();
-
-    public static final String FETCH_NEXT_PAGE_BROADCAST = "com.jpgilchrist.android.FETCH_NEXT_PAGE_BROADCAST";
-    public static final String FETCH_PREVIOUS_PAGE_BROADCAST = "com.jpgilchrist.android.FETCH_PREVIOUS_PAGE_BROADCAST";
 
     /**
      * ViewHolder for the RecyclerView
@@ -41,18 +41,9 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
         }
     }
 
-    private TMDBPage pageHolder;
+    private List<TMDBPage.TMDBResult> data = new LinkedList<>();
 
-    /**
-     * initializes the adapter and accepts the "data set" as the argument
-     */
-    public MovieGridAdapter(TMDBPage initialPage) {
-        if (initialPage == null) {
-            this.pageHolder = new TMDBPage();
-        } else {
-            this.pageHolder = initialPage;
-        }
-    }
+    public MovieGridAdapter() {}
 
     /**
      * onCreateViewHolder is called once per view that's created (not bound)
@@ -73,25 +64,7 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
      */
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Log.d(TAG, "onBindViewHolder position[" + position + "] itemCount[" + getItemCount() + "] lastPageLoaded[" + pageHolder.getPage() + "]");
-
-        holder.titleTextView.setText(this.pageHolder.getResults().get(position).getTitle());
-
-        if (position == getItemCount() - 1) { // we are binding the last item
-            Log.d(TAG, "Sending Broadcast: " + FETCH_NEXT_PAGE_BROADCAST);
-
-            Intent intent = new Intent();
-            intent.setAction(FETCH_NEXT_PAGE_BROADCAST);
-            holder.itemView.getContext().sendBroadcast(intent);
-        } else if (position == 0) {
-
-            int lastPageLoaded = pageHolder.getPage();
-            if (lastPageLoaded * TMDBPage.ITEMS_PER_PAGE > pageHolder.getResults().size()) {
-                Intent intent = new Intent();
-                intent.setAction(FETCH_PREVIOUS_PAGE_BROADCAST);
-                holder.itemView.getContext().sendBroadcast(intent);
-            }
-        }
+        holder.titleTextView.setText(this.data.get(position).getTitle());
     }
 
     /**
@@ -100,31 +73,19 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
      */
     @Override
     public int getItemCount() {
-        if (this.pageHolder == null) {
+        if (this.data == null) {
             return 0;
         }
-
-        return this.pageHolder.getResults().size();
-    }
-
-    public void setPage(TMDBPage initialPage) {
-        if (initialPage == null) {
-            this.pageHolder = new TMDBPage();
-        } else {
-            this.pageHolder = initialPage;
-        }
-        notifyDataSetChanged();
+        return this.data.size();
     }
 
     public void appendPage(TMDBPage page) {
-        this.pageHolder.setPage(page.getPage());
-        this.pageHolder.getResults().addAll(page.getResults());
+        this.data.addAll(page.getResults());
         notifyDataSetChanged();
     }
 
-    public void prependPage(TMDBPage page) {
-        this.pageHolder.getResults().addAll(0, page.getResults());
+    public void reset() {
+        this.data.clear();
         notifyDataSetChanged();
     }
-
 }

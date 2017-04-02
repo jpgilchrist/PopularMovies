@@ -32,11 +32,6 @@ public class MainActivity
     private RecyclerView.LayoutManager layoutManager;
 
     private int TMDB_LOADER_ID = 9001;
-    private String FETCH_NEXT_EXTRA = "FETCH_NEXT_EXTRA";
-
-    private final TMDBPage data = new TMDBPage();
-
-    private BroadcastReceiver fetchPageReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,45 +49,10 @@ public class MainActivity
         recyclerView.setLayoutManager(layoutManager);
 
         // create a new adapter with our fake data
-        adapter = new MovieGridAdapter(data);
+        adapter = new MovieGridAdapter();
         recyclerView.setAdapter(adapter);
 
-        // setup and start the loader to fetch the TMDB Data
-        final int loaderId = TMDB_LOADER_ID;
-        final LoaderManager.LoaderCallbacks<TMDBPage> callback = MainActivity.this;
-        Bundle bundleForLoader = new Bundle();
-        bundleForLoader.putBoolean(FETCH_NEXT_EXTRA, true);
-        getSupportLoaderManager().initLoader(TMDB_LOADER_ID, bundleForLoader, MainActivity.this);
-
-        fetchPageReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Log.d(TAG, "Received Broadcast: " + intent.getAction());
-
-                Bundle bundle = new Bundle();
-                switch (intent.getAction()) {
-                    case MovieGridAdapter.FETCH_NEXT_PAGE_BROADCAST:
-                        bundle.putBoolean(FETCH_NEXT_EXTRA, true);
-                        getSupportLoaderManager().restartLoader(TMDB_LOADER_ID, bundle, MainActivity.this);
-                        break;
-                    case MovieGridAdapter.FETCH_PREVIOUS_PAGE_BROADCAST:
-                        bundle.putBoolean(FETCH_NEXT_EXTRA, false);
-                        getSupportLoaderManager().restartLoader(TMDB_LOADER_ID, bundle, MainActivity.this);
-                        break;
-                }
-            }
-        };
-
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(MovieGridAdapter.FETCH_NEXT_PAGE_BROADCAST);
-        intentFilter.addAction(MovieGridAdapter.FETCH_PREVIOUS_PAGE_BROADCAST);
-        registerReceiver(fetchPageReceiver, intentFilter);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(fetchPageReceiver);
+        getSupportLoaderManager().initLoader(TMDB_LOADER_ID, null, MainActivity.this);
     }
 
     @Override
@@ -119,9 +79,6 @@ public class MainActivity
         }
     }
 
-    private int leadingPage = 0;
-    private int trailingPage = 0;
-
     @Override
     public Loader<TMDBPage> onCreateLoader(int id, final Bundle args) {
 
@@ -131,10 +88,10 @@ public class MainActivity
 
             @Override
             protected void onStartLoading() {
-                Log.d(TAG, "onStartLoading: " + args.getBoolean(FETCH_NEXT_EXTRA));
                 if (loading) {
                     return;
                 }
+
                 loading = true;
 
                 forceLoad();
@@ -142,22 +99,15 @@ public class MainActivity
 
             @Override
             public TMDBPage loadInBackground() {
-                boolean fetchNext = args.getBoolean(FETCH_NEXT_EXTRA);
                 TMDBPage response = null;
-                if (fetchNext) {
-                    Log.d(TAG, "Fetch Next " + (trailingPage + 1));
-                    response = TMDBUtils.getResponseFromURL(TMDBUtils.buildPublicMoviesURL(trailingPage + 1));
-                } else {
-                    Log.d(TAG, "Fetch Previous " + (leadingPage - 1));
-                    response = TMDBUtils.getResponseFromURL(TMDBUtils.buildPublicMoviesURL(leadingPage - 1));
-                }
+
+                response = TMDBUtils.getResponseFromURL(TMDBUtils.buildPublicMoviesURL(1));
 
                 return response;
             }
 
             @Override
             public void deliverResult(TMDBPage page) {
-                Log.d(TAG, "deliverResult" + page);
                 loading = false;
                 super.deliverResult(page);
             }
@@ -166,36 +116,13 @@ public class MainActivity
 
     @Override
     public void onLoadFinished(Loader<TMDBPage> loader, TMDBPage page) {
-        Log.d(TAG, "onLoadFinished leading[" + leadingPage + "] trailing[" + trailingPage + "] page[" + page.getPage() + "]");
-
-        int fetched = page.getPage();
-        boolean fetchedNext = false;
-
-        if (fetched > trailingPage) {
-            fetchedNext = true;
-            trailingPage = fetched;
-            if (leadingPage == 0) {
-                leadingPage = fetched;
-            }
-        } else {
-            fetchedNext = false;
-            leadingPage = fetched;
-            if (trailingPage == 0) {
-                trailingPage = fetched;
-            }
-        }
-
-        if (fetchedNext) {
-            Log.d(TAG, "onLoadFinished appendPage " + page);
+        if (page != null) {
             adapter.appendPage(page);
-        } else {
-            Log.d(TAG, "onLoadFinished prependPage " + page);
-            adapter.prependPage(page);
         }
     }
 
     @Override
     public void onLoaderReset(Loader<TMDBPage> loader) {
-        adapter.setPage(null);
+        adapter.reset();
     }
 }
