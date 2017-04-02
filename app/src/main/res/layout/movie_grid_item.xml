@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="300dp">
 
-    <TextView
-        android:id="@+id/movie_grid_item_title"
+    <ImageView
+        android:id="@+id/movie_grid_item_poster"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/move_grid_item_default_text"
-        android:gravity="center" />
+        android:scaleType="fitXY"/>
 
 </FrameLayout>

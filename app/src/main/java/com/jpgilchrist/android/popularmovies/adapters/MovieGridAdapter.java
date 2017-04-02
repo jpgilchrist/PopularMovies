@@ -1,15 +1,19 @@
 package com.jpgilchrist.android.popularmovies.adapters;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.jpgilchrist.android.popularmovies.R;
 import com.jpgilchrist.android.popularmovies.tmdb.TMDBPage;
+import com.jpgilchrist.android.popularmovies.tmdb.TMDBUtils;
+import com.squareup.picasso.Picasso;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -30,14 +34,15 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
      */
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView titleTextView;
+        private ImageView posterImageView;
+
         /**
          * Constructor for the ViewHolder - sets any references to items in the view for later use
          * @param itemView
          */
         public ViewHolder(View itemView) {
             super(itemView);
-            titleTextView = (TextView) itemView.findViewById(R.id.movie_grid_item_title);
+            posterImageView = (ImageView) itemView.findViewById(R.id.movie_grid_item_poster);
         }
     }
 
@@ -64,7 +69,10 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
      */
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.titleTextView.setText(this.data.get(position).getTitle());
+        Uri posterPathUri = TMDBUtils.buildPosterPathUri(data.get(position).getPoster_path(), TMDBUtils.ImageSize.W342);
+        Picasso.with(holder.itemView.getContext())
+                .load(posterPathUri)
+                .into(holder.posterImageView);
     }
 
     /**

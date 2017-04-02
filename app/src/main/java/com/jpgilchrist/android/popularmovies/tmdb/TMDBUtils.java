@@ -24,6 +24,8 @@ public class TMDBUtils {
     private static final String TAG = TMDBUtils.class.getSimpleName();
 
     private static final String BASE_URL = "https://api.themoviedb.org";
+    private static final String IMAGE_URL = "https://image.tmdb.org";
+    private static final String IMAGE_URL_PATH_PREFIX = "t/p/";
 
     private static final String POPULAR_MOVIES_PATH = "3/movie/popular";
     private static final String TOPRATED_MOVIES_PATH = "3/movie/top_rated";
@@ -35,6 +37,29 @@ public class TMDBUtils {
     private static final String QP_LANG_VALUE = "en-US";
 
     private static final String QP_PAGE_NAME = "page";
+
+    public enum ImageSize {
+        W92("w92"), W154("w154"), W185("w185"), W342("w342"), W500("w500"), W780("w780"), ORIGINAL("original");
+
+        private String path;
+
+        ImageSize(String path) {
+            this.path = path;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public static ImageSize fromPath(String path) {
+            for (ImageSize imageSize : ImageSize.values()) {
+                if (imageSize.path == path) {
+                    return imageSize;
+                }
+            }
+            return null;
+        }
+    }
 
     public static URL buildPublicMoviesURL(int page) {
         Uri uri = Uri.parse(BASE_URL).buildUpon()
@@ -66,6 +91,13 @@ public class TMDBUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static Uri buildPosterPathUri(String posterPath, ImageSize size) {
+        Uri uri = Uri.parse(IMAGE_URL).buildUpon()
+                .path(IMAGE_URL_PATH_PREFIX + size.getPath() + posterPath)
+                .build();
+        return uri;
     }
 
     public static TMDBPage getResponseFromURL(URL url) {
