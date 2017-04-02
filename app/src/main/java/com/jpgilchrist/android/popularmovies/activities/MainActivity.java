@@ -51,10 +51,21 @@ public class MainActivity
         adapter = new MovieGridAdapter();
         recyclerView.setAdapter(adapter);
 
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .registerOnSharedPreferenceChangeListener(this);
+        initializeSharedPreferencesListener();
 
         getSupportLoaderManager().initLoader(TMDB_LOADER_ID, null, MainActivity.this);
+    }
+
+    private void initializeSharedPreferencesListener() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        if (sharedPreferences.contains(getString(R.string.SORT_PREF_KEY))) {
+            String sortValue = sharedPreferences.getString(
+                    getString(R.string.SORT_PREF_KEY), getString(R.string.SORT_PREF_DEFAULT_VALUE));
+            CURRENT_SORT_METHOD = TMDBUtils.Sort.fromSortValue(sortValue);
+        }
+
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
