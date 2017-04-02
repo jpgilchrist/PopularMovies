@@ -7,13 +7,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import com.jpgilchrist.android.popularmovies.R;
+import com.jpgilchrist.android.popularmovies.fragments.SettingsFragment;
 
 public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
+
+        getFragmentManager().beginTransaction()
+                .replace(android.R.id.content, new SettingsFragment())
+                .commit();
 
         // setup the action bar to have the leftward facing back button
         ActionBar actionBar = getSupportActionBar();
