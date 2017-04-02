@@ -73,7 +73,7 @@ public class TMDBPage {
         private String poster_path;
         private boolean adult;
         private String overview;
-        private Date release_date;
+        private String release_date;
         private int[] genre_ids;
         private Number id;
         private String original_title;
@@ -109,11 +109,11 @@ public class TMDBPage {
             this.overview = overview;
         }
 
-        public Date getRelease_date() {
+        public String getRelease_date() {
             return release_date;
         }
 
-        public void setRelease_date(Date release_date) {
+        public void setRelease_date(String release_date) {
             this.release_date = release_date;
         }
 

@@ -76,19 +76,22 @@ public class TMDBUtils {
                 .build();
 
         Response response = null;
+        TMDBPage page = null;
+
         try {
             Log.d(TAG, "Fetching URL " + url.toString());
 
             response = client.newCall(request).execute();
 
             Gson gson = new Gson();
-            return gson.fromJson(response.body().string(), TMDBPage.class);
+            page = gson.fromJson(response.body().string(), TMDBPage.class);
         } catch (IOException | JsonSyntaxException e) {
             if (response != null) {
                 response.close();
             }
         }
-        return null;
+
+        return page;
     }
 
 }
