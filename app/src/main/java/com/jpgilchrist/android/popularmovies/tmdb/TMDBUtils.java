@@ -130,8 +130,8 @@ public class TMDBUtils {
 
             response = client.newCall(request).execute();
 
-            Gson gson = new Gson();
-            page = gson.fromJson(response.body().string(), TMDBPage.class);
+            page = GsonFactory.INSTANCE.getGson().fromJson(response.body().string(), TMDBPage.class);
+
         } catch (IOException | JsonSyntaxException e) {
             if (response != null) {
                 response.close();

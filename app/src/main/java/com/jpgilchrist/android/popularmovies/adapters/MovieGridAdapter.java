@@ -1,14 +1,11 @@
 package com.jpgilchrist.android.popularmovies.adapters;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.jpgilchrist.android.popularmovies.R;
 import com.jpgilchrist.android.popularmovies.tmdb.TMDBPage;
@@ -28,10 +25,23 @@ import java.util.List;
 public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.ViewHolder> {
 
     private static final String TAG = MovieGridAdapter.class.getSimpleName();
+
+    private List<TMDBPage.TMDBResult> data = new LinkedList<>();
+
+    final private OnClickHandler onClickHandler;
+
+    public interface OnClickHandler {
+        void onClick(TMDBPage.TMDBResult result);
+    }
+
+    public MovieGridAdapter(OnClickHandler onClickHandler) {
+        this.onClickHandler = onClickHandler;
+    }
+
     /**
      * ViewHolder for the RecyclerView
      */
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private ImageView posterImageView;
 
@@ -42,12 +52,16 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
         public ViewHolder(View itemView) {
             super(itemView);
             posterImageView = (ImageView) itemView.findViewById(R.id.movie_grid_item_poster);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            int adapterPosition = getAdapterPosition();
+            TMDBPage.TMDBResult tmdbResult = data.get(adapterPosition);
+            onClickHandler.onClick(tmdbResult);
         }
     }
-
-    private List<TMDBPage.TMDBResult> data = new LinkedList<>();
-
-    public MovieGridAdapter() {}
 
     /**
      * onCreateViewHolder is called once per view that's created (not bound)

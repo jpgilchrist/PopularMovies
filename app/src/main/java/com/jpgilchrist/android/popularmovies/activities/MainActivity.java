@@ -16,12 +16,14 @@ import android.view.MenuItem;
 
 import com.jpgilchrist.android.popularmovies.adapters.MovieGridAdapter;
 import com.jpgilchrist.android.popularmovies.R;
+import com.jpgilchrist.android.popularmovies.tmdb.GsonFactory;
 import com.jpgilchrist.android.popularmovies.tmdb.TMDBPage;
 import com.jpgilchrist.android.popularmovies.tmdb.TMDBUtils;
 
 public class MainActivity
         extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<TMDBPage>,
+        MovieGridAdapter.OnClickHandler,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -30,7 +32,8 @@ public class MainActivity
     private MovieGridAdapter adapter;
     private RecyclerView.LayoutManager layoutManager;
 
-    private int TMDB_LOADER_ID = 9001;
+    private static int TMDB_LOADER_ID = 9001;
+    private static boolean PREFERENCES_HAVE_CHANGED = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +51,7 @@ public class MainActivity
         recyclerView.setLayoutManager(layoutManager);
 
         // create a new adapter with our fake data
-        adapter = new MovieGridAdapter();
+        adapter = new MovieGridAdapter(this);
         recyclerView.setAdapter(adapter);
 
         initializeSharedPreferencesListener();
@@ -168,9 +171,15 @@ public class MainActivity
         adapter.reset();
     }
 
-    private static boolean PREFERENCES_HAVE_CHANGED = false;
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         PREFERENCES_HAVE_CHANGED = true;
+    }
+
+    @Override
+    public void onClick(TMDBPage.TMDBResult result) {
+        Intent intent = new Intent(this, DetailActivity.class);
+        intent.putExtra(Intent.EXTRA_TEXT, GsonFactory.INSTANCE.getGson().toJson(result));
+        startActivity(intent);
     }
 }
