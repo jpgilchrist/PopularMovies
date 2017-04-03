@@ -75,7 +75,7 @@ public class DetailActivity extends AppCompatActivity {
     private void initializeContent() {
         titleTextView.setText(result.getTitle());
         synopsisTextView.setText(result.getOverview());
-        synopsisTextView.setText(String.valueOf(result.getVote_average()));
+        ratingTextiew.setText(String.valueOf(result.getVote_average()));
 
         DateFormat dateFormat = new SimpleDateFormat("YYYY-MM-DD");
         String releaseDate = result.getRelease_date();
