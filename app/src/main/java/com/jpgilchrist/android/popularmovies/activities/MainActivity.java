@@ -176,8 +176,11 @@ public class MainActivity
     public void onLoadFinished(Loader<TMDBPage> loader, TMDBPage page) {
         if (page != null) {
             adapter.setData(page.getResults());
+        } else {
+            adapter.reset();
+            // TODO show an appropriate error message/screen
         }
-        //TODO handle null by clearing the adapter's data and showing an appropriate error
+
     }
 
     @Override
