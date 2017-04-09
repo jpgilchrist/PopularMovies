@@ -32,42 +32,51 @@ public class MainActivity
     private MovieGridAdapter adapter;
     private RecyclerView.LayoutManager layoutManager;
 
-    private static int TMDB_LOADER_ID = 9001;
-    private static boolean PREFERENCES_HAVE_CHANGED = false;
+    private static int TMDB_LOADER_ID = 9001; //unique loader id
+    private static boolean PREFERENCES_HAVE_CHANGED = false; // used to check whether preferences have changed
+    private static TMDBUtils.Sort CURRENT_SORT_METHOD = TMDBUtils.Sort.POPULAR; // cache the current SORT method for use by AsyncTaskLoader
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // find the recycler view
+        layoutManager = new GridLayoutManager(this, 2); // grid layout manager 2 wide
+
+        // custom grid adapter initialized with an onClickHandler
+        adapter = new MovieGridAdapter(MainActivity.this /* onClickHandler */);
+
+        // setup the recycler view with layout manager and movie grid adapter
         recyclerView = (RecyclerView) findViewById(R.id.movie_grid_recycler_view);
-
-        // they will all be the same height and width
         recyclerView.setHasFixedSize(true);
-
-        // create a new gird layout that is 2 wide
-        layoutManager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(layoutManager);
-
-        // create a new adapter with our fake data
-        adapter = new MovieGridAdapter(this);
         recyclerView.setAdapter(adapter);
 
+        // start listening for preference changes
         initializeSharedPreferencesListener();
 
+        // initialize the AsyncTaskLoader
         getSupportLoaderManager().initLoader(TMDB_LOADER_ID, null, MainActivity.this);
     }
 
+    /*
+     * sets up listeners for sharedPreferences change events
+     */
     private void initializeSharedPreferencesListener() {
+        // get the shared preferences
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+        /*
+         * if the shared preferences contains the key then we need to initialize the AsyncTaskLoader
+         * with the correct with the TMBDUtils.SORT method
+         */
         if (sharedPreferences.contains(getString(R.string.SORT_PREF_KEY))) {
             String sortValue = sharedPreferences.getString(
                     getString(R.string.SORT_PREF_KEY), getString(R.string.SORT_PREF_DEFAULT_VALUE));
             CURRENT_SORT_METHOD = TMDBUtils.Sort.fromSortValue(sortValue);
         }
 
+        // actually start listening to preference change events
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -75,6 +84,7 @@ public class MainActivity
     protected void onStart() {
         super.onStart();
 
+        // if preferences have changed then grab the SORT method and then restart the loader
         if (PREFERENCES_HAVE_CHANGED) {
             PREFERENCES_HAVE_CHANGED = false;
 
@@ -87,18 +97,20 @@ public class MainActivity
     protected void onDestroy() {
         super.onDestroy();
 
+        // unregister the shared preferences change listener
         PreferenceManager.getDefaultSharedPreferences(this)
                 .unregisterOnSharedPreferenceChangeListener(this);
     }
 
+    /*
+     * convenience method to pull the SORT method out of the shared preferences
+     */
     private void readSharedPreferencesForSortOrder() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         CURRENT_SORT_METHOD = TMDBUtils.Sort.fromSortValue(
                 sharedPreferences.getString(getString(R.string.SORT_PREF_KEY), getString(R.string.SORT_PREF_DEFAULT_VALUE))
         );
     }
-
-    private static TMDBUtils.Sort CURRENT_SORT_METHOD = TMDBUtils.Sort.POPULAR;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -133,10 +145,10 @@ public class MainActivity
 
             @Override
             protected void onStartLoading() {
+                // if it's loading already then we don't want to start a new one
                 if (loading) {
                     return;
                 }
-
                 loading = true;
 
                 forceLoad();
@@ -146,6 +158,7 @@ public class MainActivity
             public TMDBPage loadInBackground() {
                 TMDBPage response = null;
 
+                // get's the first page of Movies from TMDB based on the CURRENT_SORT_METHOD
                 response = TMDBUtils.getResponseFromURL(TMDBUtils.buildUrl(1, CURRENT_SORT_METHOD));
 
                 return response;
@@ -164,6 +177,7 @@ public class MainActivity
         if (page != null) {
             adapter.setData(page.getResults());
         }
+        //TODO handle null by clearing the adapter's data and showing an appropriate error
     }
 
     @Override
@@ -173,11 +187,14 @@ public class MainActivity
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        PREFERENCES_HAVE_CHANGED = true;
+        PREFERENCES_HAVE_CHANGED = true; // cache the fact that the preferences have changed
+        // the onStart method will restart the loader which will grab the appropriate method
+        // from the preferences manager
     }
 
     @Override
     public void onClick(TMDBPage.TMDBResult result) {
+        // starts the movie details activitiy with the appropriate data
         Intent intent = new Intent(this, DetailActivity.class);
         intent.putExtra(Intent.EXTRA_TEXT, GsonFactory.INSTANCE.getGson().toJson(result));
         startActivity(intent);
