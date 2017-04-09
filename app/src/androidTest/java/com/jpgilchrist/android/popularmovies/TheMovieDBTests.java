@@ -33,17 +33,17 @@ public class TheMovieDBTests {
 
     @Test
     public void testPopularUrl() throws Exception {
-        assertEquals(new URL(POPULAR_URL), TMDBUtils.buildPublicMoviesURL(1));
+        assertEquals(new URL(POPULAR_URL), TMDBUtils.buildUrl(1, TMDBUtils.Sort.POPULAR));
     }
 
     @Test
     public void testTopRatedUrl() throws Exception {
-        assertEquals(new URL(TOPRATED_URL), TMDBUtils.buildTopRatedMoviesURL(2));
+        assertEquals(new URL(TOPRATED_URL), TMDBUtils.buildUrl(2, TMDBUtils.Sort.TOP_RATED));
     }
 
     @Test
     public void testFetchPopularMovies() throws Exception {
-        TMDBPage response = TMDBUtils.getResponseFromURL(TMDBUtils.buildPublicMoviesURL(1));
+        TMDBPage response = TMDBUtils.getResponseFromURL(TMDBUtils.buildUrl(1, TMDBUtils.Sort.POPULAR));
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
