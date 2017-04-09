@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -37,6 +38,8 @@ public class DetailActivity extends AppCompatActivity {
     private TextView ratingTextiew;
     private TextView synopsisTextView;
     private ImageView imageView;
+
+    private Toast errorToast;
 
     @Override
 
@@ -75,29 +78,35 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void initializeContent() {
-
-        // setup the views to display the correct data
-        titleTextView.setText(result.getTitle());
-        synopsisTextView.setText(result.getOverview());
-        ratingTextiew.setText(String.valueOf(result.getVote_average()));
-
-        DateFormat dateFormat = new SimpleDateFormat("YYYY-MM-DD");
-        String releaseDate = result.getRelease_date();
-        if (releaseDate != null && !releaseDate.isEmpty()) {
-            try {
-                Date date = dateFormat.parse(releaseDate);
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(date);
-                yearTextView.setText("(" + calendar.get(Calendar.YEAR) + ")");
-            } catch (ParseException e) {
-                Log.d(TAG, "The date returned by the API isn't parsable with the established format.");
+        if (result == null) {
+            if (errorToast == null) {
+                errorToast.cancel();
             }
-        }
+            errorToast = Toast.makeText(this, R.string.movie_grid_error_text, Toast.LENGTH_LONG);
+        } else {
+            // setup the views to display the correct data
+            titleTextView.setText(result.getTitle());
+            synopsisTextView.setText(result.getOverview());
+            ratingTextiew.setText(String.valueOf(result.getVote_average()));
 
-        // use picasso to load the poster image
-        Picasso.with(this)
-                .load(TMDBUtils.buildPosterPathUri(result.getPoster_path(), TMDBUtils.ImageSize.W342))
-                .into(imageView);
+            DateFormat dateFormat = new SimpleDateFormat("YYYY-MM-DD");
+            String releaseDate = result.getRelease_date();
+            if (releaseDate != null && !releaseDate.isEmpty()) {
+                try {
+                    Date date = dateFormat.parse(releaseDate);
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(date);
+                    yearTextView.setText("(" + calendar.get(Calendar.YEAR) + ")");
+                } catch (ParseException e) {
+                    Log.d(TAG, "The date returned by the API isn't parsable with the established format.");
+                }
+            }
+
+            // use picasso to load the poster image
+            Picasso.with(this)
+                    .load(TMDBUtils.buildPosterPathUri(result.getPoster_path(), TMDBUtils.ImageSize.W342))
+                    .into(imageView);
+        }
     }
 
     @Override
