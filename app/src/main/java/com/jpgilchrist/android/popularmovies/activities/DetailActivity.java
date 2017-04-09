@@ -44,18 +44,20 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
+        // get all the view objects
         titleTextView = (TextView) findViewById(R.id.MOVIE_DETAIL_TITLE);
         yearTextView = (TextView) findViewById(R.id.MOVIE_DETAIL_YEAR);
         ratingTextiew = (TextView) findViewById(R.id.MOVIE_DETAIL_RATING);
         synopsisTextView = (TextView) findViewById(R.id.MOVIE_DETAIL_SYNOPSIS);
         imageView = (ImageView) findViewById(R.id.MOVIE_DETAIL_IMAGE);
 
-        Intent starter = getIntent();
+        Intent starter = getIntent(); // get the intent that started the activity
         if (starter != null) {
             Bundle extras = starter.getExtras();
-            String jsonifiedTMBDResult = extras.getString(Intent.EXTRA_TEXT);
+            String jsonifiedTMBDResult = extras.getString(Intent.EXTRA_TEXT); // pull the stringified json data from the bundle
             if (jsonifiedTMBDResult != null && !jsonifiedTMBDResult.isEmpty()) {
                 try {
+                    // parse the stringified object and build a TMDBPage obejct
                     this.result = GsonFactory.INSTANCE.getGson().fromJson(jsonifiedTMBDResult, TMDBPage.TMDBResult.class);
                 } catch (JsonSyntaxException e) {
                     this.result = null;
@@ -73,6 +75,8 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void initializeContent() {
+
+        // setup the views to display the correct data
         titleTextView.setText(result.getTitle());
         synopsisTextView.setText(result.getOverview());
         ratingTextiew.setText(String.valueOf(result.getVote_average()));
@@ -90,6 +94,7 @@ public class DetailActivity extends AppCompatActivity {
             }
         }
 
+        // use picasso to load the poster image
         Picasso.with(this)
                 .load(TMDBUtils.buildPosterPathUri(result.getPoster_path(), TMDBUtils.ImageSize.W342))
                 .into(imageView);
