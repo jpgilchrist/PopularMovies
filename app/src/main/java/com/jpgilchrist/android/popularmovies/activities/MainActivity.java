@@ -13,6 +13,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.jpgilchrist.android.popularmovies.adapters.MovieGridAdapter;
 import com.jpgilchrist.android.popularmovies.R;
@@ -31,6 +34,8 @@ public class MainActivity
     private RecyclerView recyclerView;
     private MovieGridAdapter adapter;
     private RecyclerView.LayoutManager layoutManager;
+    private TextView errorTextView;
+    private ProgressBar loadingIndicator;
 
     private static int TMDB_LOADER_ID = 9001; //unique loader id
     private static boolean PREFERENCES_HAVE_CHANGED = false; // used to check whether preferences have changed
@@ -41,7 +46,11 @@ public class MainActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        layoutManager = new GridLayoutManager(this, 2); // grid layout manager 2 wide
+        errorTextView = (TextView) findViewById(R.id.movie_grid_error);
+        loadingIndicator = (ProgressBar) findViewById(R.id.movie_grid_loader);
+
+        // grid layout manager 2 wide
+        layoutManager = new GridLayoutManager(this, 2);
 
         // custom grid adapter initialized with an onClickHandler
         adapter = new MovieGridAdapter(MainActivity.this /* onClickHandler */);
@@ -150,7 +159,7 @@ public class MainActivity
                     return;
                 }
                 loading = true;
-
+                showLoading();
                 forceLoad();
             }
 
@@ -176,9 +185,10 @@ public class MainActivity
     public void onLoadFinished(Loader<TMDBPage> loader, TMDBPage page) {
         if (page != null) {
             adapter.setData(page.getResults());
+            showSuccess();
         } else {
             adapter.reset();
-            // TODO show an appropriate error message/screen
+            showFailure();
         }
 
     }
@@ -201,5 +211,26 @@ public class MainActivity
         Intent intent = new Intent(this, DetailActivity.class);
         intent.putExtra(Intent.EXTRA_TEXT, GsonFactory.INSTANCE.getGson().toJson(result));
         startActivity(intent);
+    }
+
+    // convenience method to show the appropriate views on successful api call
+    private void showSuccess() {
+        recyclerView.setVisibility(View.VISIBLE);
+        errorTextView.setVisibility(View.INVISIBLE);
+        loadingIndicator.setVisibility(View.INVISIBLE);
+    }
+
+    // convenience method to show the appropriate views on failure api call
+    private void showFailure() {
+        recyclerView.setVisibility(View.INVISIBLE);
+        errorTextView.setVisibility(View.VISIBLE);
+        loadingIndicator.setVisibility(View.INVISIBLE);
+    }
+
+    // convenience method to show the appropriate views on loading api call
+    private void showLoading() {
+        recyclerView.setVisibility(View.INVISIBLE);
+        errorTextView.setVisibility(View.INVISIBLE);
+        loadingIndicator.setVisibility(View.VISIBLE);
     }
 }

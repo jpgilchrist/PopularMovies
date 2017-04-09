@@ -8,4 +8,5 @@
     <string name="SORT_PREF_TITLE">Sort Order</string>
     <string name="SORT_PREF_DIALOG_TITLE">Sort Options</string>
     <string name="SORT_PREF_DEFAULT_VALUE">popular</string>
+    <string name="movie_grid_error_text">Oops. Something went wrong.</string>
 </resources>
