@@ -7,13 +7,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Created by jpegz on 3/27/17.
+/*
+ *  Modeling the TMDB Results after analyzing the API Docs
  */
-
 public class TMDBPage {
-
-    public static final int ITEMS_PER_PAGE = 20; // from TMDB api docs
 
     private int page;
     private int total_results;

@@ -15,10 +15,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-/**
- * Created by jpegz on 3/22/17.
- */
-
 public class TMDBUtils {
 
     private static final String TAG = TMDBUtils.class.getSimpleName();
@@ -38,6 +34,7 @@ public class TMDBUtils {
 
     private static final String QP_PAGE_NAME = "page";
 
+    // image size enum - containing all the sizes I know about
     public enum ImageSize {
         W92("w92"), W154("w154"), W185("w185"), W342("w342"), W500("w500"), W780("w780"), ORIGINAL("original");
 
@@ -61,6 +58,7 @@ public class TMDBUtils {
         }
     }
 
+    // sort method enum for selecting which API to query
     public enum Sort {
         POPULAR("popular"), TOP_RATED("top_rated");
 
@@ -84,8 +82,12 @@ public class TMDBUtils {
         }
     }
 
+    /*
+     * build URL object for a specific page and sort order
+     */
     public static URL buildUrl(int page, Sort sort) {
         Uri.Builder builder = Uri.parse(BASE_URL).buildUpon();
+
         switch (sort) {
             case POPULAR:
                 builder.path(POPULAR_MOVIES_PATH);
@@ -105,9 +107,14 @@ public class TMDBUtils {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
+
+        // in case of an exception return null and allow activity to handle result
         return null;
     }
 
+    /*
+     * Poser path Uri for use by the picasso image loading library
+     */
     public static Uri buildPosterPathUri(String posterPath, ImageSize size) {
         Uri uri = Uri.parse(IMAGE_URL).buildUpon()
                 .path(IMAGE_URL_PATH_PREFIX + size.getPath() + posterPath)
@@ -115,6 +122,10 @@ public class TMDBUtils {
         return uri;
     }
 
+    /*
+     * Actually call the API and parse the results into a TMDBPage object
+     *  - uses the OkHttpClient
+     */
     public static TMDBPage getResponseFromURL(URL url) {
         OkHttpClient client = new OkHttpClient();
 
@@ -130,6 +141,7 @@ public class TMDBUtils {
 
             response = client.newCall(request).execute();
 
+            // parse the response into a TMBDPage object
             page = GsonFactory.INSTANCE.getGson().fromJson(response.body().string(), TMDBPage.class);
 
         } catch (IOException | JsonSyntaxException e) {
@@ -138,6 +150,7 @@ public class TMDBUtils {
             }
         }
 
+        // in the case of an exception return null and allow activity to handle the error
         return page;
     }
 

@@ -2,10 +2,7 @@ package com.jpgilchrist.android.popularmovies.tmdb;
 
 import com.google.gson.Gson;
 
-/**
- * Created by jpegz on 4/2/17.
- */
-
+// enum singleton pattern to get a gson instance
 public enum GsonFactory {
     INSTANCE;
 
