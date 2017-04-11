@@ -89,7 +89,7 @@ public class DetailActivity extends AppCompatActivity {
             synopsisTextView.setText(result.getOverview());
             ratingTextiew.setText(String.valueOf(result.getVote_average()));
 
-            DateFormat dateFormat = new SimpleDateFormat("YYYY-MM-DD");
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd").getInstance();
             String releaseDate = result.getRelease_date();
             if (releaseDate != null && !releaseDate.isEmpty()) {
                 try {
